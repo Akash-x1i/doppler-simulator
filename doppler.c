@@ -1,32 +1,40 @@
 #include <stdio.h>
 #include <raylib.h>
 
-#define WIDTH 1200       // Initial width of window
-#define HEIGHT 600       // Initial height of window
-#define DELTA 0.5f          // Velocity of OBJ1
-#define DELTAD 10        // Doppler Drift Distance
 #define MAX_WAVE 1000
-#define OBJ1_RADIUS 10   // size (half) of the OBJ1 
-#define FREQUENCY 1      // Diff b/w two wavesArr
-#define FRAME_RATE 60
-#define WAVELENGTH 10
-
+#define OBJ1_RADIUS 10                // size (half) of the OBJ1 
+#define FREQUENCY 6.00f      
+#define WAVE_SPEED 343                // speed of sound mtr/sec approx      
+#define SCALE 0.01f                    // Speed Scaling Factor    
+#define FRAME_RATE 60.00f
+#define MACH = (WAVE_SPEED * SCALE)  // MACH 1 Speed
 #define BACKGROUND BLACK
 
-Vector2 OBJCoords = {WIDTH/2, HEIGHT/2};
+float ObjSpeed =  0.5f;               // Speed of Obj in Mach
+
+int Height = 600;                    // Initial Height of window
+int Width = 1200;                    // Initial Width of window
+
+Vector2 OBJCoords = {600, 300};
+
+Rectangle Legend = {1050, 450, 100, 100};
 
 typedef struct Waves
 {
     int x;
     int y;
     float z;
-
 } Waves;
 
 Waves WavesArr[MAX_WAVE];
 
 int WaveCount = 0;
 int currentWave = 0;
+
+void getWindowSize(){
+    Width = GetScreenWidth();
+    Height = GetScreenHeight();
+}
 
 void newWave(){
     if(WaveCount < MAX_WAVE){
@@ -47,11 +55,14 @@ void propagateWaves(float dt){
     int i;
     for ( i = 0; i < WaveCount; i++)
     {
-        WavesArr[i].z += 1 ;
-    }
-    
+        WavesArr[i].z += WAVE_SPEED * SCALE;
+    }   
 }
 
+void drawLegend(){
+    Legend = (Rectangle){Width-200, Height-160, 180, 140};
+    DrawRectangleRounded(Legend, 0.3, 1, WHITE);
+}
 
 void drawObj(){
     DrawCircleV(OBJCoords, OBJ1_RADIUS, WHITE);
@@ -60,15 +71,17 @@ void drawObj(){
 
 int main(){
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-    InitWindow(WIDTH, HEIGHT, "Doppler Simulator");
+    InitWindow(Width, Height, "Doppler Simulator");
 
     SetTargetFPS(FRAME_RATE);
     float Interval = 0;
     while(!WindowShouldClose()){
+        getWindowSize();
         BeginDrawing();
         float dt = GetFrameTime();
+        float ObjSpeedWave = (FRAME_RATE/FREQUENCY)*dt;
         Interval += dt; 
-        if(Interval > 0.16){
+        if(Interval > ObjSpeedWave){
             newWave();
             Interval = 0;
         }
@@ -80,25 +93,25 @@ int main(){
         
         if (IsKeyDown(KEY_DOWN))
         {
-            OBJCoords.y = OBJCoords.y + DELTA;      // obj moves forward
+            OBJCoords.y = OBJCoords.y + (ObjSpeed * WAVE_SPEED * SCALE);      // obj moves forward
         }
         if (IsKeyDown(KEY_UP))
         {
-            OBJCoords.y = OBJCoords.y - DELTA;
+            OBJCoords.y = OBJCoords.y - (ObjSpeed * WAVE_SPEED * SCALE);
         }
         if (IsKeyDown(KEY_RIGHT))
         {
-            OBJCoords.x = OBJCoords.x + DELTA;
+            OBJCoords.x = OBJCoords.x + (ObjSpeed * WAVE_SPEED * SCALE);      // obj moves forward
         }
         if (IsKeyDown(KEY_LEFT))
         {
-            OBJCoords.x = OBJCoords.x - DELTA;
+            OBJCoords.x = OBJCoords.x - (ObjSpeed * WAVE_SPEED * SCALE);
         }
         
         propagateWaves(dt);
         drawWave();
         drawObj();
-
+        drawLegend();
 
         EndDrawing();
     }
