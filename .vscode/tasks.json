@@ -9,7 +9,9 @@
                 "doppler.c",
                 "-o",
                 "doppler",
-                "-lraylib"
+                "-lraylib",
+                "-Wall",
+                "-Werror"
             ],
             "group": {
                 "kind": "build",
