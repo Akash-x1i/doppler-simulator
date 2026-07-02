@@ -16,8 +16,14 @@ int Height = 600;                    // Initial Height of window
 int Width = 1200;                    // Initial Width of window
 
 Vector2 OBJCoords = {600, 300};
+
 Vector2 LegendPosition = {420, 1060};
 Rectangle Legend = {1050, 450, 100, 100};
+
+Rectangle Help = {(1200/2)-150, (600/2)-75, 230, 150};
+Vector2 HelpText1 = { 515 + 10, 225 + 10};
+
+bool isHelpShown = true;
 
 typedef struct Waves
 {
@@ -71,12 +77,17 @@ void drawLegend(){
     LegendPosition = (Vector2){Width-180, Height-140};
 }
 
+void showHelp(){
+    Help = (Rectangle){(Width/2)-175, (Height/2)-38, 350, 75};
+    DrawRectangleRounded(Help, 0.3, 1, WHITE);
+}
 int main(){
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(Width, Height, "Doppler Simulator");
     Font RobotoMono = LoadFont("assets/RobotoMono-Regular.ttf");
     SetTargetFPS(FRAME_RATE);
     float Interval = 0;
+
     while(!WindowShouldClose()){
         getWindowSize();
         BeginDrawing();
@@ -88,11 +99,9 @@ int main(){
             Interval = 0;
         }
         
-        
         ClearBackground(BLACK);
 
         // Keyboard Controls:
-
         if((IsKeyDown(KEY_LEFT_SHIFT) | IsKeyDown(KEY_RIGHT_SHIFT))){           // change speed of obj
             if (IsKeyPressed(KEY_DOWN))
             {
@@ -130,6 +139,9 @@ int main(){
             {
                 OBJCoords.x = OBJCoords.x - (ObjSpeed * WAVE_SPEED * SCALE);
             }
+            if(IsKeyPressed(KEY_I)){
+                isHelpShown = isHelpShown ? false : true; 
+            }
         }
         
         
@@ -137,6 +149,17 @@ int main(){
         drawWave();
         drawObj();
         drawLegend();
+        if(isHelpShown){
+            showHelp();
+            HelpText1 = (Vector2){ Help.x + 15, Help.y + 15};
+            DrawTextEx(RobotoMono,
+               "SHIFT + UP/DOWN: Change Object Speed\nCTRL + UP/DOWN: Change Frequency", 
+               HelpText1,
+               20,
+               0,
+               BLACK
+            );
+        } 
         DrawTextEx(RobotoMono,
             TextFormat("Frequency: %.2f\nWave Speed: %i\nScaling Factor: %.2f\nObj Speed: Mach %.2f\nFPS: %.f\nPress I for Help",
             Frequency, WAVE_SPEED, SCALE, ObjSpeed, FRAME_RATE), 
@@ -148,6 +171,3 @@ int main(){
     CloseWindow();
     return 0;
 }
-
-
-
